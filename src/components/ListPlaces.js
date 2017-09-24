@@ -9,19 +9,21 @@ import {
   TextInput,
   ActivityIndicator,
   Image,
+  TouchableOpacity
 } from 'react-native';
 import axios from 'axios';
 
-const KEY_GOOGLE_PLACES = "AIzaSyAFZaPFaF6JFd0KPN98QhP1YC85avJxOoo";
+const KEY_GOOGLE_PLACES = "AIzaSyD_EXznjY6XC7ZJsvafTDr8HRtHqOnBhJg";
 
-class ListaLocais extends Component {
+class ListPlaces extends Component {
+  static navigationOptions = { title: "Locais" }
 
   state = {
-    latitude: null,
-    longitude: null,
-    listaLocais: null,
-    erro: null,
-    aguarde: false
+    latitude: "",
+    longitude: "",
+    listaLocais: [],
+    erro: "",
+    aguarde: "",
   }
 
   componentDidMount = () => {
@@ -46,7 +48,6 @@ class ListaLocais extends Component {
     if (latitude && longitude) {
       return (
         <View>
-
           {this.renderTopo()}
 
           <ScrollView>
@@ -87,7 +88,7 @@ class ListaLocais extends Component {
       return (
         <ActivityIndicator
           size="large"
-          color="#F00"
+          color="#000"
         />
       );
     }
@@ -96,31 +97,43 @@ class ListaLocais extends Component {
     if (this.state.listaLocais) {
       content = this.state.listaLocais.map((item, index) => {
         if (item.photos) {
+          const { navigate } = this.props.navigation;
           return (
-            <View key={index} style={styles.itemLocais}>
-              <View style={styles.fotoLocais}>
-                <Image style={styles.detalhesLocais} source={{ uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&photoreference=' + item.photos[0].photo_reference + '&key=AIzaSyAFZaPFaF6JFd0KPN98QhP1YC85avJxOoo' }} />
+            <TouchableOpacity
+              key={item.formatted_address}
+              onPress={() => navigate('DetailsItems', { place: item.place_id, reference: item.photos[0].photo_reference })}
+            >
+              <View key={index} style={styles.itemLocais}>
+                <View style={styles.fotoLocais}>
+                  <Image style={styles.detalhesLocais} source={{ uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&photoreference=' + item.photos[0].photo_reference + '&key='+KEY_GOOGLE_PLACES }} />
+                </View>
+                <View style={styles.detalhesItem}>
+                  <Text style={styles.txtNome}>{item.name}</Text>
+                  <Text>{item.formatted_address}</Text>
+                </View>
               </View>
+            </TouchableOpacity >
+          );
+        }
+
+        return (
+          <TouchableOpacity
+            key={item.formatted_address}
+            onPress={() => this.props.navigation.navigate('DetailsItems', { place: item.place_id })}
+          >
+            <View key={index} style={styles.itemLocais}>
               <View>
-                <Text>{item.name}</Text>
+                <Text style={styles.txtNome}>{item.name}</Text>
                 <Text>{item.formatted_address}</Text>
               </View>
             </View>
-          );
-        }
-        return (
-          <View key={index} style={{ padding: 16 }}>
-            <View>
-              <Text>{item.name}</Text>
-              <Text>{item.formatted_address}</Text>
-            </View>
-          </View>
+          </TouchableOpacity>
         );
       });
     }
 
     return (
-      <View>
+      <View >
         {content}
       </View>
     )
@@ -158,20 +171,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEE',
     borderWidth: 0.5,
     borderColor: '#000',
-    margin: 10,
-    padding: 10,
+    margin: 6,
+    padding: 6,
     flexDirection: 'row'
-
   },
   fotoLocais: {
     width: 102,
-    height: 102,
+    height: 72,
   },
   detalhesLocais: {
-    height: 100,
+    height: 70,
     width: 100,
-    flex: 1,
+  },
+  detalhesItem: {
+    marginLeft: 10,
+    flex: 1
+  },
+  txtNome: {
+    fontSize: 16,
+    fontWeight: 'bold'
   }
 });
 
-export default ListaLocais;
+export default ListPlaces;
